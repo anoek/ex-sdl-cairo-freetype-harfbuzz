@@ -13,7 +13,6 @@
 
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ft.h>
-#include <harfbuzz/hb-buffer.h>
 #include <harfbuzz/hb-icu.h> /* Alternatively you can use hb-glib.h */
 
 #include <cairo/cairo.h>
@@ -144,23 +143,25 @@ int main () {
         for (int i=0; i < 3; ++i) {
             x = 0;
             /* Create a buffer for harfbuzz to use */
-            hb_buffer_t *buf = hb_buffer_create(0);
+            hb_buffer_t *buf = hb_buffer_create();
 
             //alternatively you can use hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
             hb_buffer_set_unicode_funcs(buf, hb_icu_get_unicode_funcs());
             hb_buffer_set_direction(buf, text_directions[i]); /* or LTR */
             hb_buffer_set_script(buf, scripts[i]); /* see hb-unicode.h */
-            hb_buffer_set_language(buf, hb_language_from_string(languages[i]));
+            hb_buffer_set_language(buf, hb_language_from_string(languages[i], strlen(languages[i])));
 
             /* Layout the text */
             hb_buffer_add_utf8(buf, texts[i], strlen(texts[i]), 0, strlen(texts[i]));
-            hb_shape(hb_ft_font[i], hb_ft_face[i], buf, NULL, 0);
+            //hb_shape(hb_ft_font[i], hb_ft_face[i], buf, NULL, 0);
+            hb_shape(hb_ft_font[i], buf, NULL, 0);
 
 
             /* Hand the layout to cairo to render */
-            int                  glyph_count  = hb_buffer_get_length(buf);
-            hb_glyph_info_t     *glyph_info   = hb_buffer_get_glyph_infos(buf);
-            hb_glyph_position_t *glyph_pos    = hb_buffer_get_glyph_positions(buf);
+            //unsigned int         glyph_count  = hb_buffer_get_length(buf);
+            unsigned int         glyph_count;
+            hb_glyph_info_t     *glyph_info   = hb_buffer_get_glyph_infos(buf, &glyph_count);
+            hb_glyph_position_t *glyph_pos    = hb_buffer_get_glyph_positions(buf, &glyph_count);
             cairo_glyph_t       *cairo_glyphs = malloc(sizeof(cairo_glyph_t) * glyph_count);
             for (int i=0; i < glyph_count; ++i) {
                 cairo_glyphs[i].index = glyph_info[i].codepoint;
