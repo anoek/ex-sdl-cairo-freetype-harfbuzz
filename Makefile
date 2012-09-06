@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=--std=c99 -g -Wall --pedantic `freetype-config --cflags`
+CFLAGS=--std=c99 -g -O2 -Wall --pedantic `freetype-config --cflags`
 LDFLAGS=`icu-config --ldflags`
 LIBS=-lcairo -lSDL -lharfbuzz `freetype-config --libs`
 

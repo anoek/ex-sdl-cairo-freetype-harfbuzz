@@ -18,27 +18,29 @@
 #include <cairo/cairo.h>
 #include <cairo/cairo-ft.h>
 
-const char *texts[3] = {
+#define NUM_EXAMPLES 3
+
+const char *texts[NUM_EXAMPLES] = {
     "This is some english text",
     "هذه هي بعض النصوص العربي",
     "這是一些中文",
 };
 
-const int text_directions[3] = {
+const int text_directions[NUM_EXAMPLES] = {
     HB_DIRECTION_LTR,
     HB_DIRECTION_RTL,
-    HB_DIRECTION_LTR,
+    HB_DIRECTION_TTB,
 };
 
 /* XXX: I don't know if these are correct or not, it doesn't seem to break anything
  *      regardless of their value. */
-const char *languages[3] = {
+const char *languages[NUM_EXAMPLES] = {
     "en",
     "ar",
     "ch",
 };
 
-const hb_script_t scripts[3] = {
+const hb_script_t scripts[NUM_EXAMPLES] = {
     HB_SCRIPT_LATIN,
     HB_SCRIPT_ARABIC,
     HB_SCRIPT_HAN,
@@ -59,23 +61,24 @@ int main () {
     assert(!FT_Init_FreeType(&ft_library));
 
     /* Load our fonts */
-    FT_Face ft_face[3];
+    FT_Face ft_face[NUM_EXAMPLES];
     assert(!FT_New_Face(ft_library, "fonts/DejaVuSerif.ttf", 0, &ft_face[ENGLISH]));
     assert(!FT_Set_Char_Size(ft_face[ENGLISH], 0, ptSize, device_hdpi, device_vdpi ));
-    assert(!FT_New_Face(ft_library, "fonts/lateef.ttf", 0, &ft_face[ARABIC]));
+    //assert(!FT_New_Face(ft_library, "fonts/lateef.ttf", 0, &ft_face[ARABIC]));
+    assert(!FT_New_Face(ft_library, "fonts/amiri-0.104/amiri-regular.ttf", 0, &ft_face[ARABIC]));
     assert(!FT_Set_Char_Size(ft_face[ARABIC], 0, ptSize, device_hdpi, device_vdpi ));
     assert(!FT_New_Face(ft_library, "fonts/fireflysung-1.3.0/fireflysung.ttf", 0, &ft_face[CHINESE]));
     assert(!FT_Set_Char_Size(ft_face[CHINESE], 0, ptSize, device_hdpi, device_vdpi ));
 
     /* Get our cairo font structs */
-    cairo_font_face_t *cairo_ft_face[3];
+    cairo_font_face_t *cairo_ft_face[NUM_EXAMPLES];
     cairo_ft_face[ENGLISH] = cairo_ft_font_face_create_for_ft_face(ft_face[ENGLISH], 0);
     cairo_ft_face[ARABIC]  = cairo_ft_font_face_create_for_ft_face(ft_face[ARABIC], 0);
     cairo_ft_face[CHINESE] = cairo_ft_font_face_create_for_ft_face(ft_face[CHINESE], 0);
 
     /* Get our harfbuzz font/face structs */
-    hb_font_t *hb_ft_font[3];
-    hb_face_t *hb_ft_face[3];
+    hb_font_t *hb_ft_font[NUM_EXAMPLES];
+    hb_face_t *hb_ft_face[NUM_EXAMPLES];
     hb_ft_font[ENGLISH] = hb_ft_font_create(ft_face[ENGLISH], NULL);
     hb_ft_face[ENGLISH] = hb_ft_face_create(ft_face[ENGLISH], NULL);
     hb_ft_font[ARABIC]  = hb_ft_font_create(ft_face[ARABIC] , NULL);
@@ -86,8 +89,8 @@ int main () {
 
 
     /** Setup our SDL window **/
-    int width      = 640;
-    int height     = 480;
+    int width      = 800;
+    int height     = 600;
     int videoFlags = SDL_SWSURFACE | SDL_RESIZABLE | SDL_DOUBLEBUF;
     int bpp        = 32;
 
@@ -139,9 +142,9 @@ int main () {
         /*** Draw our text to the cairo context ***/ 
         /*******************************************/
         int x = 0;
-        int y = 100;
-        for (int i=0; i < 3; ++i) {
-            x = 0;
+        int y = 50;
+        for (int i=0; i < NUM_EXAMPLES; ++i) {
+
             /* Create a buffer for harfbuzz to use */
             hb_buffer_t *buf = hb_buffer_create();
 
@@ -153,22 +156,30 @@ int main () {
 
             /* Layout the text */
             hb_buffer_add_utf8(buf, texts[i], strlen(texts[i]), 0, strlen(texts[i]));
-            //hb_shape(hb_ft_font[i], hb_ft_face[i], buf, NULL, 0);
             hb_shape(hb_ft_font[i], buf, NULL, 0);
 
 
             /* Hand the layout to cairo to render */
-            //unsigned int         glyph_count  = hb_buffer_get_length(buf);
             unsigned int         glyph_count;
             hb_glyph_info_t     *glyph_info   = hb_buffer_get_glyph_infos(buf, &glyph_count);
             hb_glyph_position_t *glyph_pos    = hb_buffer_get_glyph_positions(buf, &glyph_count);
             cairo_glyph_t       *cairo_glyphs = malloc(sizeof(cairo_glyph_t) * glyph_count);
+
+            unsigned int string_width_in_pixels = 0;
+            for (int i=0; i < glyph_count; ++i) {
+                string_width_in_pixels += glyph_pos[i].x_advance/64;
+            }
+
+            if (i == ENGLISH) { x = 20; }                                    /* left justify */
+            if (i == ARABIC)  { x = width - string_width_in_pixels -20; }       /* right justify */
+            if (i == CHINESE) { x = width/2 - string_width_in_pixels/2; }   /* center */
+
             for (int i=0; i < glyph_count; ++i) {
                 cairo_glyphs[i].index = glyph_info[i].codepoint;
-                cairo_glyphs[i].x = x;
-                cairo_glyphs[i].y = y;
+                cairo_glyphs[i].x = x + (glyph_pos[i].x_offset/64);
+                cairo_glyphs[i].y = y - (glyph_pos[i].y_offset/64);
                 x += glyph_pos[i].x_advance/64;
-                y += glyph_pos[i].y_advance/64;
+                y -= glyph_pos[i].y_advance/64;
             }
 
             cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1.0);
@@ -178,7 +189,7 @@ int main () {
 
             free(cairo_glyphs);
             hb_buffer_destroy(buf);
-            y += 100;
+            y += 75;
         }
 
 
@@ -231,7 +242,7 @@ int main () {
     }
 
     /* Cleanup */
-    for (int i=0; i < 3; ++i) {
+    for (int i=0; i < NUM_EXAMPLES; ++i) {
         cairo_font_face_destroy(cairo_ft_face[i]);
         hb_font_destroy(hb_ft_font[i]);
         hb_face_destroy(hb_ft_face[i]);
