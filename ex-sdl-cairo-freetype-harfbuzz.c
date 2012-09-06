@@ -144,7 +144,6 @@ int main () {
         int x = 0;
         int y = 50;
         for (int i=0; i < NUM_EXAMPLES; ++i) {
-
             /* Create a buffer for harfbuzz to use */
             hb_buffer_t *buf = hb_buffer_create();
 
@@ -170,8 +169,8 @@ int main () {
                 string_width_in_pixels += glyph_pos[i].x_advance/64;
             }
 
-            if (i == ENGLISH) { x = 20; }                                    /* left justify */
-            if (i == ARABIC)  { x = width - string_width_in_pixels -20; }       /* right justify */
+            if (i == ENGLISH) { x = 20; }                                   /* left justify */
+            if (i == ARABIC)  { x = width - string_width_in_pixels -20; }   /* right justify */
             if (i == CHINESE) { x = width/2 - string_width_in_pixels/2; }   /* center */
 
             for (int i=0; i < glyph_count; ++i) {
