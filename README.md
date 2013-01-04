@@ -10,4 +10,4 @@ Many thanks.
 Screenshot
 ==========
 
-![Screenshot](https://github.com/lxnt/ex-sdl-freetype-harfbuzz/blob/master/screenshot.png)
+![Screenshot](https://github.com/lxnt/ex-sdl-freetype-harfbuzz/raw/master/screenshot.png)
