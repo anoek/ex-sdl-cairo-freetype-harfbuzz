@@ -114,6 +114,39 @@ void spanner_rw(int y, int count, const FT_Span* spans, void *user) {
 
 FT_SpanFunc spanner = spanner_rw;
 
+void ftfdump(FT_Face ftf) {
+    for(int i=0; i<ftf->num_charmaps; i++) {
+        printf("%d: %s %s %c%c%c%c plat=%hu id=%hu\n", i,
+            ftf->family_name,
+            ftf->style_name,
+            ftf->charmaps[i]->encoding >>24,
+           (ftf->charmaps[i]->encoding >>16 ) & 0xff,
+           (ftf->charmaps[i]->encoding >>8) & 0xff,
+           (ftf->charmaps[i]->encoding) & 0xff,
+            ftf->charmaps[i]->platform_id,
+            ftf->charmaps[i]->encoding_id
+        );
+    }
+}
+
+/*  See http://www.microsoft.com/typography/otspec/name.htm
+    for a list of some possible platform-encoding pairs.
+    We're interested in 0-3 aka 3-1 - UCS-2.
+    Otherwise, fail. If a font has some unicode map, but lacks
+    UCS-2 - it is a broken or irrelevant font. What exactly 
+    Freetype will select on face load (it promises most wide 
+    unicode, and if that will be slower that UCS-2 - left as 
+    an excercise to check. */
+int force_ucs2_charmap(FT_Face ftf) {
+    for(int i = 0; i < ftf->num_charmaps; i++)
+        if ((  (ftf->charmaps[i]->platform_id == 0)
+            && (ftf->charmaps[i]->encoding_id == 3))
+           || ((ftf->charmaps[i]->platform_id == 3)
+            && (ftf->charmaps[i]->encoding_id == 1)))
+                return FT_Set_Charmap(ftf, ftf->charmaps[i]);
+    return -1;
+}
+
 int main () {
     int ptSize = 50*64;
     int device_hdpi = 72;
@@ -127,12 +160,18 @@ int main () {
     FT_Face ft_face[NUM_EXAMPLES];
     assert(!FT_New_Face(ft_library, "fonts/DejaVuSerif.ttf", 0, &ft_face[ENGLISH]));
     assert(!FT_Set_Char_Size(ft_face[ENGLISH], 0, ptSize, device_hdpi, device_vdpi ));
+    ftfdump(ft_face[ENGLISH]); // wonderful world of encodings ...
+    force_ucs2_charmap(ft_face[ENGLISH]); // which we ignore.
 
     assert(!FT_New_Face(ft_library, "fonts/amiri-0.104/amiri-regular.ttf", 0, &ft_face[ARABIC]));
     assert(!FT_Set_Char_Size(ft_face[ARABIC], 0, ptSize, device_hdpi, device_vdpi ));
+    ftfdump(ft_face[ARABIC]);
+    force_ucs2_charmap(ft_face[ARABIC]);
 
     assert(!FT_New_Face(ft_library, "fonts/fireflysung-1.3.0/fireflysung.ttf", 0, &ft_face[CHINESE]));
     assert(!FT_Set_Char_Size(ft_face[CHINESE], 0, ptSize, device_hdpi, device_vdpi ));
+    ftfdump(ft_face[CHINESE]);
+    force_ucs2_charmap(ft_face[CHINESE]);
 
     /* Get our harfbuzz font/face structs */
     hb_font_t *hb_ft_font[NUM_EXAMPLES];
