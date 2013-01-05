@@ -143,7 +143,7 @@ int force_ucs2_charmap(FT_Face ftf) {
         if ((  (ftf->charmaps[i]->platform_id == 0)
             && (ftf->charmaps[i]->encoding_id == 3))
            || ((ftf->charmaps[i]->platform_id == 3)
-            && (ftf->charmaps[i]->platform_id == 1)))
+            && (ftf->charmaps[i]->encoding_id == 1)))
                 return FT_Set_Charmap(ftf, ftf->charmaps[i]);
     return -1;
 }
