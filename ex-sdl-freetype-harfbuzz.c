@@ -48,7 +48,6 @@ enum {
 typedef struct _spanner_baton_t { // assumes 32bpp surface
     uint32_t *pixels; // set to y-start of the glyph.
     uint32_t *first_pixel, *last_pixel; // bounds check
-    uint32_t color;
     uint32_t pitch;
     uint32_t rshift;
     uint32_t gshift;
