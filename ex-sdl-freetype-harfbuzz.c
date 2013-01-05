@@ -175,13 +175,13 @@ int main () {
 
     /* Get our harfbuzz font/face structs */
     hb_font_t *hb_ft_font[NUM_EXAMPLES];
-    hb_face_t *hb_ft_face[NUM_EXAMPLES];
+    //hb_face_t *hb_ft_face[NUM_EXAMPLES];
     hb_ft_font[ENGLISH] = hb_ft_font_create(ft_face[ENGLISH], NULL);
-    hb_ft_face[ENGLISH] = hb_ft_face_create(ft_face[ENGLISH], NULL);
+    //hb_ft_face[ENGLISH] = hb_ft_face_create(ft_face[ENGLISH], NULL);
     hb_ft_font[ARABIC]  = hb_ft_font_create(ft_face[ARABIC] , NULL);
-    hb_ft_face[ARABIC]  = hb_ft_face_create(ft_face[ARABIC] , NULL);
+    //hb_ft_face[ARABIC]  = hb_ft_face_create(ft_face[ARABIC] , NULL);
     hb_ft_font[CHINESE] = hb_ft_font_create(ft_face[CHINESE], NULL);
-    hb_ft_face[CHINESE] = hb_ft_face_create(ft_face[CHINESE], NULL);
+    //hb_ft_face[CHINESE] = hb_ft_face_create(ft_face[CHINESE], NULL);
 
     /** Setup our SDL window **/
     int width      = 800;
@@ -331,7 +331,7 @@ int main () {
     /* Cleanup */
     for (int i=0; i < NUM_EXAMPLES; ++i) {
         hb_font_destroy(hb_ft_font[i]);
-        hb_face_destroy(hb_ft_face[i]);
+//        hb_face_destroy(hb_ft_face[i]);
     }
 
     FT_Done_FreeType(ft_library);
