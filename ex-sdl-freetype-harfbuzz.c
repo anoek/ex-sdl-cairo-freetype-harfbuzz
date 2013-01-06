@@ -47,7 +47,7 @@ enum {
 
 typedef struct _spanner_baton_t {
     /* rendering part - assumes 32bpp surface */
-    uint32_t *pixels; // set to y-start of the glyph.
+    uint32_t *pixels; // set to the glyph's origin.
     uint32_t *first_pixel, *last_pixel; // bounds check
     uint32_t pitch;
     uint32_t rshift;
@@ -121,9 +121,7 @@ void spanner_rw(int y, int count, const FT_Span* spans, void *user) {
 
 /*  This spanner is for obtaining exact bounding box for the string.
     Unfortunately this can't be done without rendering it (or pretending to).
-    After this runs, we should get width and height of the bounding box,
-    plus offsets to the pen position at the start.
-    Or something like that. Must consider what it means for rtl scripts.
+    After this runs, we get min and max values of coordinates used.
 */
 void spanner_sizer(int y, int count, const FT_Span* spans, void *user) {
     spanner_baton_t *baton = (spanner_baton_t *) user;
@@ -295,7 +293,7 @@ int main () {
             int max_y = INT_MIN; // this is max topside bearing along the string.
             int min_y = INT_MAX; // this is max value of (height - topbearing) along the string.
             /*  Naturally, the above comments swap their meaning between horizontal and vertical scripts,
-                since the pen changes the axis is its advanced along.
+                since the pen changes the axis it is advanced along.
                 However, their differences still make up the bounding box for the string.
                 Also note that all this is in FT coordinate system where y axis points upwards.
              */
@@ -348,7 +346,7 @@ int main () {
                 sizer_x += glyph_pos[j].x_advance/64;
                 sizer_y += glyph_pos[j].y_advance/64; // note how the sign differs from the rendering pass
             }
-            /* Still have to take into account last glyph's advance. */
+            /* Still have to take into account last glyph's advance. Or not? */
             if (min_x > sizer_x) min_x = sizer_x;
             if (max_x < sizer_x) max_x = sizer_x;
             if (min_y > sizer_y) min_y = sizer_y;
@@ -358,9 +356,8 @@ int main () {
             int bbox_w = max_x - min_x;
             int bbox_h = max_y - min_y;
 
-            /* Two offsets below position the bounding box with respect to the
-               first drawn glyph's origin. hmm. whatever. With respect to the coordinates
-               that were given to the rendering part as an 'origin'
+            /* Two offsets below position the bounding box with respect to the 'origin',
+                which is sort of origin of string's first glyph.
 
                 baseline_offset - offset perpendecular to the baseline to the topmost (horizontal),
                                   or leftmost (vertical) pixel drawn.
@@ -434,21 +431,20 @@ int main () {
                 top    -= baseline_shift;
                 bottom -= baseline_shift;
 
-                /* draw the baseline */
                 vline(sdl_surface, y, y + bbox_h, x, 0x0000ff00);
             }
             if (resized)
                 printf("ex %d origin %d,%d bbox l=%d r=%d t=%d b=%d\n",
                                         i, x, y, left, right, top, bottom);
 
-            /* +1/-1 are for the bbox borders be 1 pixel outside the bbox itself */
+            /* +1/-1 are for the bbox borders be the next pixel outside the bbox itself */
             hline(sdl_surface, left - 1, right + 1, top - 1, 0x00ff0000);
             hline(sdl_surface, left - 1, right + 1, bottom + 1, 0x00ff0000);
             vline(sdl_surface, top - 1, bottom + 1, left - 1, 0x00ff0000);
             vline(sdl_surface, top - 1, bottom + 1, right + 1, 0x00ff0000);
 
             /* set rendering spanner */
-            ftr_params.gray_spans = spanner; // throw it in
+            ftr_params.gray_spans = spanner;
 
             /* initialize rendering part of the baton */
             stuffbaton.pixels = NULL;
@@ -503,7 +499,9 @@ int main () {
                         done = 1;
                     }
                     break;
-
+                case SDL_QUIT:
+                    done = 1;
+                    break;
                 case SDL_VIDEORESIZE:
                     resized = 1;
                     width = event.resize.w;
