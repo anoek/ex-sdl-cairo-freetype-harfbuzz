@@ -9,8 +9,8 @@
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
 
-#include <harfbuzz/hb.h>
-#include <harfbuzz/hb-ft.h>
+#include <hb.h>
+#include <hb-ft.h>
 
 #define NUM_EXAMPLES 3
 
