@@ -478,7 +478,7 @@ int main () {
             }
 
             /* clean up the buffer, but don't kill it just yet */
-            hb_buffer_clear(buf);
+            hb_buffer_clear_contents(buf);
 
         }
 
