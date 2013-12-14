@@ -216,6 +216,10 @@ int main () {
                     }
                     break;
 
+	        case SDL_QUIT:
+                    done = 1;
+                    break;
+
                 case SDL_VIDEORESIZE:
                     width = event.resize.w;
                     height = event.resize.h;
