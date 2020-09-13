@@ -169,10 +169,7 @@ int main () {
             unsigned int string_width_in_pixels = 0;
             for (int i=0; i < glyph_count; ++i) {
                 string_width_in_pixels += glyph_pos[i].x_advance/64;
-			///64;
-		printf("glyph position number %i, x : %i\n",i,glyph_pos[i].x_advance);
             }
-		printf("Langeuage : %s\n",languages[i]); 
             if (i == ENGLISH) { x = 20; }                                   /* left justify */
             if (i == ARABIC)  { x = width - string_width_in_pixels -20; }   /* right justify */
             if (i == CHINESE) { x = width/2 - string_width_in_pixels/2; }   /* center */
@@ -262,7 +259,7 @@ int main () {
     }
 
     FT_Done_FreeType(ft_library);
-    SDL_DestroyTexture(texture);
+    //SDL_DestroyTexture(texture); # I don't know why I can't destroy this :S
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(screen);
     SDL_Quit();
