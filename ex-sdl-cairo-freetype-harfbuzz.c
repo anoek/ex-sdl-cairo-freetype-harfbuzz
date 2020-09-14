@@ -19,11 +19,11 @@
 #include <cairo/cairo-ft.h>
 
 #define NUM_EXAMPLES 3
-#define FONT_SIZE 20
+#define FONT_SIZE 40
 
 const char *texts[NUM_EXAMPLES] = {
     "This is some english text",
-    "هذه هي بعض النصوص العربي",
+    "هذه بعض النصوص العربية",
     "這是一些中文",
 };
 
@@ -51,9 +51,7 @@ enum {
     ENGLISH=0, ARABIC, CHINESE
 };
 
-
 int main () {
-
 
     /* Init freetype */
     FT_Library ft_library;
@@ -85,13 +83,10 @@ int main () {
     hb_ft_font[CHINESE] = hb_ft_font_create(ft_face[CHINESE], NULL);
     hb_ft_face[CHINESE] = hb_ft_face_create(ft_face[CHINESE], NULL);
 
-
-
     /** Setup our SDL window **/
     int width      = 800;
     int height     = 600;
     int videoFlags =   SDL_WINDOW_RESIZABLE  ;
-    
 
     /* Initialize our SDL window */
     if(SDL_Init(SDL_INIT_VIDEO) < 0)   { 
@@ -122,7 +117,6 @@ int main () {
             0x000000ff,
             0
         );
-
 
     /* Our main event/draw loop */
     int done = 0;
@@ -159,7 +153,6 @@ int main () {
             hb_buffer_add_utf8(buf, texts[i], strlen(texts[i]), 0, strlen(texts[i]));
             hb_shape(hb_ft_font[i], buf, NULL, 0);
 
-
             /* Hand the layout to cairo to render */
             unsigned int         glyph_count;
             hb_glyph_info_t     *glyph_info   = hb_buffer_get_glyph_infos(buf, &glyph_count);
@@ -192,8 +185,6 @@ int main () {
             y += 75;
         }
 
-
-
         /******************************************************************************/
         /*** Cleanup our cairo surface, copy it to the screen, deal with SDL events ***/
         /******************************************************************************/
@@ -202,10 +193,10 @@ int main () {
        	SDL_SetRenderDrawColor(renderer,235, 52, 146,0);
        	SDL_RenderClear(renderer);
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer,sdl_surface);
-	//SDL_FreeSurface(sdl_surface);
 	SDL_RenderCopy(renderer,texture,NULL,NULL);
 	SDL_RenderPresent(renderer);
-	
+	SDL_DestroyTexture(texture);
+
         /* We're now done with our cairo surface */
         cairo_surface_destroy(cairo_surface);
         cairo_destroy(cr);
@@ -233,11 +224,10 @@ int main () {
 					event.type = SDL_QUIT;
 					SDL_PushEvent(&event);
 					break;
-				      }
-                    }
+		      }
                     /* Create an SDL image surface we can hand to cairo to draw to */
-                    //SDL_FreeSurface(sdl_surface);
-                    sdl_surface = SDL_CreateRGBSurface (
+		    SDL_FreeSurface(sdl_surface);
+		    sdl_surface = SDL_CreateRGBSurface (
                             videoFlags, width, height, 32,
                             0x00ff0000,
                             0x0000ff00,
@@ -245,9 +235,9 @@ int main () {
                             0
                             );
                     break;
+		    }
             }
         }
-
         SDL_Delay(1); 
     }
 
@@ -259,7 +249,7 @@ int main () {
     }
 
     FT_Done_FreeType(ft_library);
-    //SDL_DestroyTexture(texture); # I don't know why I can't destroy this :S
+    //SDL_DestroyTexture(texture); 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(screen);
     SDL_Quit();
