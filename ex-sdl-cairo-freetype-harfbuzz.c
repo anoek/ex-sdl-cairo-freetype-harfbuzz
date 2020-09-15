@@ -249,7 +249,6 @@ int main () {
                 }
             } while(SDL_PollEvent(&event));
         }
-        SDL_Delay(1); 
     }
 
     /* Cleanup */
@@ -260,7 +259,6 @@ int main () {
     }
 
     FT_Done_FreeType(ft_library);
-    //SDL_DestroyTexture(texture); 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(screen);
     SDL_Quit();
