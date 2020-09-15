@@ -205,42 +205,49 @@ int main () {
         cairo_destroy(cr);
 
 
-        /* Handle SDL events */
+        /* Handle SDL events. Wait for the first event, process any others that
+         * may also be pending. If you don't want to pause your program waiting
+         * for events, use SDL_PollEvent instead. */
         SDL_Event event;
-        while(SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_KEYDOWN:           
-                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+        if (SDL_WaitEvent(&event)) {
+            do {
+                switch (event.type) {
+                    case SDL_KEYDOWN:
+                        if (event.key.keysym.sym == SDLK_ESCAPE) {
+                            done = 1;
+                        }
+                        break;
+
+                    case SDL_QUIT:
                         done = 1;
-                    }
-                    break;
+                        break;
 
-                case SDL_QUIT:
-                    done = 1;
-                    break;
-
-                case SDL_WINDOWEVENT:
-                    switch (event.window.event) {
-                        case SDL_WINDOWEVENT_SIZE_CHANGED:
-                            width = event.window.data1;
-                            height = event.window.data2;
-                            break;
-                        case SDL_WINDOWEVENT_CLOSE:
-                            event.type = SDL_QUIT;
-                            SDL_PushEvent(&event);
-                            break;
-                    }
-                    /* Create an SDL image surface we can hand to cairo to draw to */
-                    SDL_FreeSurface(sdl_surface);
-                    sdl_surface = SDL_CreateRGBSurface (
-                            videoFlags, width, height, 32,
+                    case SDL_WINDOWEVENT:
+                        switch (event.window.event) {
+                            case SDL_WINDOWEVENT_SIZE_CHANGED:
+                                width = event.window.data1;
+                                height = event.window.data2;
+                                break;
+                            case SDL_WINDOWEVENT_CLOSE:
+                                event.type = SDL_QUIT;
+                                SDL_PushEvent(&event);
+                                break;
+                        }
+                        /* Create an SDL image surface we can hand to cairo to draw to */
+                        SDL_FreeSurface(sdl_surface);
+                        sdl_surface = SDL_CreateRGBSurface (
+                            videoFlags,
+                            width,
+                            height,
+                            32,
                             0x00ff0000,
                             0x0000ff00,
                             0x000000ff,
                             0
-                            );
-                    break;
-            }
+                        );
+                        break;
+                }
+            } while(SDL_PollEvent(&event));
         }
         SDL_Delay(1); 
     }
