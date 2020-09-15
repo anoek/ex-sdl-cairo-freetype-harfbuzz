@@ -1,7 +1,7 @@
 CC=gcc
-CFLAGS=--std=c99 -g -O2 -Wall --pedantic `freetype-config --cflags` `sdl-config --cflags`
-LDFLAGS=`icu-config --ldflags`
-LIBS=-lcairo -lharfbuzz -lharfbuzz-icu `freetype-config --libs` `sdl-config --libs`
+CFLAGS=--std=c99 -g -O2 -Wall --pedantic `pkg-config --cflags freetype2` `sdl2-config --cflags`
+#LDFLAGS=`icu-config --ldflags`
+LIBS=-lcairo -lharfbuzz -lharfbuzz-icu `pkg-config  --libs freetype2`  `sdl2-config --libs`
 
 all: ex-sdl-cairo-freetype-harfbuzz
 
