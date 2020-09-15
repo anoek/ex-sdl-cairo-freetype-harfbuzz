@@ -61,7 +61,6 @@ int main () {
     FT_Face ft_face[NUM_EXAMPLES];
     assert(!FT_New_Face(ft_library, "fonts/DejaVuSerif.ttf", 0, &ft_face[ENGLISH]));
     assert(!FT_Set_Char_Size(ft_face[ENGLISH],FONT_SIZE*64, FONT_SIZE*64,0,0));
-    //assert(!FT_New_Face(ft_library, "fonts/lateef.ttf", 0, &ft_face[ARABIC]));
     assert(!FT_New_Face(ft_library, "fonts/amiri-0.104/amiri-regular.ttf", 0, &ft_face[ARABIC]));
     assert(!FT_Set_Char_Size(ft_face[ARABIC],FONT_SIZE*64, FONT_SIZE*64,0,0 ));
     assert(!FT_New_Face(ft_library, "fonts/fireflysung-1.3.0/fireflysung.ttf", 0, &ft_face[CHINESE]));
@@ -83,7 +82,7 @@ int main () {
     hb_ft_font[CHINESE] = hb_ft_font_create(ft_face[CHINESE], NULL);
     hb_ft_face[CHINESE] = hb_ft_face_create(ft_face[CHINESE], NULL);
 
-    /** Setup our SDL window **/
+    /* Setup our SDL window */
     int width      = 800;
     int height     = 600;
     int videoFlags =   SDL_WINDOW_RESIZABLE  ;
@@ -94,29 +93,32 @@ int main () {
         return -1; 
     } 
 
-    SDL_Window *screen = SDL_CreateWindow("\"Simple\" SDL+Cairo+FreeType+HarfBuzz Example",
-		    SDL_WINDOWPOS_UNDEFINED,
-		    SDL_WINDOWPOS_UNDEFINED,
-		    width,
-		    height,videoFlags);
+    SDL_Window *screen = SDL_CreateWindow(
+        "\"Simple\" SDL+Cairo+FreeType+HarfBuzz Example",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        width,
+        height,
+        videoFlags
+    );
 
-   SDL_Renderer *renderer = SDL_CreateRenderer(screen,
-		  				-1,
-					       SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);	
-
-    /* Enable key repeat, just makes it so we don't have to worry about fancy
-     * scanboard keyboard input and such */
-    //SDL_EnableKeyRepeat(300, 130);
-    //SDL_EnableUNICODE(1); 
+    SDL_Renderer *renderer = SDL_CreateRenderer( 
+        screen,
+        -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
 
     /* Create an SDL image surface we can hand to cairo to draw to */
     SDL_Surface *sdl_surface = SDL_CreateRGBSurface (
-            videoFlags, width, height, 32,
-            0x00ff0000,
-            0x0000ff00,
-            0x000000ff,
-            0
-        );
+        videoFlags, 
+        width, 
+        height, 
+        32,
+        0x00ff0000,
+        0x0000ff00,
+        0x000000ff,
+        0
+    );
 
     /* Our main event/draw loop */
     int done = 0;
@@ -126,11 +128,12 @@ int main () {
 
         /* Create a cairo surface which will write directly to the sdl surface */
         cairo_surface_t *cairo_surface = cairo_image_surface_create_for_data (
-                (unsigned char *)sdl_surface->pixels,
-                CAIRO_FORMAT_RGB24,
-                sdl_surface->w,
-                sdl_surface->h,
-                sdl_surface->pitch);
+            (unsigned char *)sdl_surface->pixels,
+            CAIRO_FORMAT_RGB24,
+            sdl_surface->w,
+            sdl_surface->h,
+            sdl_surface->pitch
+        );
         cairo_t *cr = cairo_create(cairo_surface);
 
 
@@ -190,12 +193,12 @@ int main () {
         /******************************************************************************/
 
         /* Blit our new image to our visible screen */ 
-       	SDL_SetRenderDrawColor(renderer,235, 52, 146,0);
-       	SDL_RenderClear(renderer);
-	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer,sdl_surface);
-	SDL_RenderCopy(renderer,texture,NULL,NULL);
-	SDL_RenderPresent(renderer);
-	SDL_DestroyTexture(texture);
+        SDL_SetRenderDrawColor(renderer,235, 52, 146,0);
+        SDL_RenderClear(renderer);
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer,sdl_surface);
+        SDL_RenderCopy(renderer,texture,NULL,NULL);
+        SDL_RenderPresent(renderer);
+        SDL_DestroyTexture(texture);
 
         /* We're now done with our cairo surface */
         cairo_surface_destroy(cairo_surface);
@@ -207,27 +210,29 @@ int main () {
         while(SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_KEYDOWN:           
+                    if (event.key.keysym.sym == SDLK_ESCAPE) {
                         done = 1;
+                    }
                     break;
 
-	        case SDL_QUIT:
+                case SDL_QUIT:
                     done = 1;
                     break;
 
-                case SDL_WINDOWEVENT: {
-			switch (event.window.event) {
-				case SDL_WINDOWEVENT_SIZE_CHANGED:
-					width = event.window.data1;
-					height = event.window.data2;
-					break;
-				case SDL_WINDOWEVENT_CLOSE:
-					event.type = SDL_QUIT;
-					SDL_PushEvent(&event);
-					break;
-		      }
+                case SDL_WINDOWEVENT:
+                    switch (event.window.event) {
+                        case SDL_WINDOWEVENT_SIZE_CHANGED:
+                            width = event.window.data1;
+                            height = event.window.data2;
+                            break;
+                        case SDL_WINDOWEVENT_CLOSE:
+                            event.type = SDL_QUIT;
+                            SDL_PushEvent(&event);
+                            break;
+                    }
                     /* Create an SDL image surface we can hand to cairo to draw to */
-		    SDL_FreeSurface(sdl_surface);
-		    sdl_surface = SDL_CreateRGBSurface (
+                    SDL_FreeSurface(sdl_surface);
+                    sdl_surface = SDL_CreateRGBSurface (
                             videoFlags, width, height, 32,
                             0x00ff0000,
                             0x0000ff00,
@@ -235,7 +240,6 @@ int main () {
                             0
                             );
                     break;
-		    }
             }
         }
         SDL_Delay(1); 
