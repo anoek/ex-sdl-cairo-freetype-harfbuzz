@@ -5,6 +5,8 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include <fontconfig/fontconfig.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <freetype/ftadvanc.h>
@@ -52,19 +54,46 @@ enum {
 };
 
 int main () {
+    
+    /* Init font config */
+    FcInit(); //initializes Fontconfig
+	FcConfig* config = FcInitLoadConfigAndFonts();
+    assert(config);
+    
+    FcPattern* pat = FcNameParse((const FcChar8*)"DejaVu Serif");
+    
+    /* Increase the possible matches */
+    FcConfigSubstitute(config, pat, FcMatchPattern);
+	FcDefaultSubstitute(pat);
+    
+	FcResult result;
 
+	FcPattern* font = FcFontMatch(config, pat, &result);
+    assert(font);
+    
+    /* Will be freed with font */
+    FcChar8* file = NULL; 
+    
+    assert(FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch);
+    
     /* Init freetype */
     FT_Library ft_library;
     assert(!FT_Init_FreeType(&ft_library));
 
     /* Load our fonts */
     FT_Face ft_face[NUM_EXAMPLES];
-    assert(!FT_New_Face(ft_library, "fonts/DejaVuSerif.ttf", 0, &ft_face[ENGLISH]));
+    assert(!FT_New_Face(ft_library, (char *)file, 0, &ft_face[ENGLISH]));
     assert(!FT_Set_Char_Size(ft_face[ENGLISH],FONT_SIZE*64, FONT_SIZE*64,0,0));
     assert(!FT_New_Face(ft_library, "fonts/amiri-0.104/amiri-regular.ttf", 0, &ft_face[ARABIC]));
     assert(!FT_Set_Char_Size(ft_face[ARABIC],FONT_SIZE*64, FONT_SIZE*64,0,0 ));
     assert(!FT_New_Face(ft_library, "fonts/fireflysung-1.3.0/fireflysung.ttf", 0, &ft_face[CHINESE]));
     assert(!FT_Set_Char_Size(ft_face[CHINESE],FONT_SIZE*64, FONT_SIZE*64,0,0 ));
+    
+    /* Cleanup font config */
+    FcPatternDestroy(font);
+    FcPatternDestroy(pat);
+    FcConfigDestroy(config);
+    FcFini();
 
     /* Get our cairo font structs */
     cairo_font_face_t *cairo_ft_face[NUM_EXAMPLES];
